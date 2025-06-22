@@ -17,7 +17,7 @@ class PostController {
         $search = $request->input('search');
         $perPage = $request->input('per_page', 10);
 
-        $posts = Post::with(['author', 'categories'])
+        $posts = Post::with(['author', 'categories', 'tags'])
             ->when($search, function ($query, $search) {
                 $query->where(function ($query) use ($search) {
                     $query->where('title', 'like', "%{$search}%");
@@ -28,7 +28,7 @@ class PostController {
         return Inertia::render(
             'Posts/Index', 
             [
-                'posts' => PostResource::collection($posts),
+                'posts' => PostResource::collect($posts),
                 'filters' => [
                     'search' => $search,
                     'per_page' => $perPage
@@ -44,13 +44,18 @@ class PostController {
 
     public function edit(Post $post)
     {
-        $post->load('author', 'categories');
-        
+        $post->load('author', 'categories', 'tags');
+
         return Inertia::render(
             'Posts/Edit', 
             [
-                'post' => $post,
+                'post' => PostResource::fromModel($post),
             ]
         );
-    }    
+    }
+
+    public function update(Request $request, string $id)
+    {
+        dd($id);
+    }
 }

@@ -2,32 +2,40 @@
 
 namespace App\Http\Resources\User;
 
-use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Facades\Storage; 
+use App\Models\User;
+use Spatie\LaravelData\Data;
+use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
-class UserResource extends JsonResource
+#[TypeScript]
+class UserResource extends Data
 {
-    /**
-     * Transform the resource into an array.
-     *
-     * @return array<string, mixed>
-     */
-    public function toArray(Request $request): array
+    public function __construct(
+        public ?int $id,
+        public ?string $name,
+        public ?string $email,
+        
+        /** @var string[]|null */
+        public ?array $roles,
+        
+        public ?string $avatar,
+        public ?string $created_at,
+        public ?string $updated_at,
+        
+        /** @var string[]|null */
+        public ?array $permissions,
+    ) {}
+
+    public static function fromModel(User $user): self
     {
-        return [
-            'id' => $this->id,
-            'name' => $this->name,
-            'email' => $this->email,
-            'roles' => $this->whenLoaded('roles', function () {
-                return $this->roles->pluck('name');
-            }),
-            'avatar' => $this->avatar ? asset('storage/avatars/'.$this->avatar) : null,
-            'created_at' => $this->created_at->format('d F Y'),
-            'updated_at' => $this->updated_at->format('d F Y'),
-            'permissions' => $this->whenLoaded('permissions', function () {
-                return $this->permissions->pluck('name');
-            }),
-        ];
+        return new self(
+            id: $user->id,
+            name: $user->name,
+            email: $user->email,
+            roles: $user->relationLoaded('roles') ? $user->roles->pluck('name')->toArray() : null,
+            avatar: $user->avatar ? asset('storage/avatars/' . $user->avatar) : null,
+            created_at: $user->created_at?->format('d F Y'),
+            updated_at: $user->updated_at?->format('d F Y'),
+            permissions: $user->relationLoaded('permissions') ? $user->permissions->pluck('name')->toArray() : null,
+        );
     }
 }

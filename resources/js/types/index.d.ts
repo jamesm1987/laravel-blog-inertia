@@ -80,7 +80,9 @@ export interface Post {
     id: number;
     title: string;
     slug: string;
+    post_content: string;
     categories: Category[];
+    tags: Tag[];
     created_at: string;
     updated_at: string;
     deleted_at: string | null;

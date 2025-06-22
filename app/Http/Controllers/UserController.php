@@ -36,7 +36,7 @@ class UserController {
         return Inertia::render(
             'Users/Index', 
             [
-                'users' => UserResource::collection($users),
+                'users' => UserResource::fromModel($users),
                 'roles' => $roles,
                 'filters' => [
                     'search' => $search,

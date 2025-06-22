@@ -2,29 +2,45 @@
 
 namespace App\Http\Resources\Post;
 
-use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Facades\Storage; 
+use App\Models\Post;
+use Spatie\LaravelData\Data;
+use Spatie\TypeScriptTransformer\Attributes\TypeScript;
+use Illuminate\Support\Carbon;
 
-class PostResource extends JsonResource
+#[TypeScript]
+class PostResource extends Data
 {
-    /**
-     * Transform the resource into an array.
-     *
-     * @return array<string, mixed>
-     */
-    public function toArray(Request $request): array
+    public function __construct(
+        public int $id,
+        public string $title,
+        public string $slug,
+        public string $post_content,
+        public string $author,
+
+        /** @var array<Category>|null */
+        public ?array $categories,
+        
+        /** @var array<Category>|null */
+        public ?array $tags,
+
+        public string $created_at,
+        public string $updated_at,
+        public ?string $deleted_at,
+    ) {}
+
+    public static function fromModel(Post $post): self
     {
-        return [
-            'id' => $this->id,
-            'title' => $this->title,
-            'author' => $this->author->name,
-            'categories' => $this->categories,
-            'slug' => $this->slug,
-            'post_content' => $this->post_content,
-            'created_at' => $this->created_at->format('d F Y'),
-            'updated_at' => $this->updated_at->format('d F Y'),
-            'deleted_at' => !empty($this->deleted_at) ? $this->deleted_at->format('d F Y') : null,
-        ];
+        return new self(
+            id: $post->id,
+            title: $post->title,
+            slug: $post->slug,
+            post_content: $post->post_content,
+            author: $post->author->name,
+            categories: $post->relationLoaded('categories') ? $post->categories->toArray() : null,
+            tags: $post->relationLoaded('tags') ? $post->tags->toArray() : null,
+            created_at: $post->created_at?->format('d F Y') ?? '',
+            updated_at: $post->updated_at?->format('d F Y') ?? '',
+            deleted_at: $post->deleted_at?->format('d F Y'),
+        );
     }
 }
